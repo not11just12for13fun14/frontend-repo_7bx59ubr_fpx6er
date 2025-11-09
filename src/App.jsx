@@ -3,6 +3,8 @@ import HeroSection from './components/HeroSection';
 import Gallery from './components/Gallery';
 import QuoteCalculator from './components/QuoteCalculator';
 import BookingForm from './components/BookingForm';
+import AdminPanel from './components/AdminPanel';
+import BookingsCalendar from './components/BookingsCalendar';
 
 function App() {
   return (
@@ -12,7 +14,9 @@ function App() {
         <HeroSection />
         <Gallery />
         <QuoteCalculator />
+        <BookingsCalendar />
         <BookingForm />
+        <AdminPanel />
         <Footer />
       </main>
     </div>
