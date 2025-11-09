@@ -1,16 +1,34 @@
 import { useState } from 'react';
 import { Calendar, Mail, Phone, User } from 'lucide-react';
 
+const BACKEND = import.meta.env.VITE_BACKEND_URL || '';
+
 export default function BookingForm() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', date: '', address: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // In a full app, send to backend. For now, show a success message.
-    setSubmitted(true);
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND}/api/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error('Failed to submit booking');
+      await res.json();
+      setSubmitted(true);
+    } catch (err) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,6 +53,7 @@ export default function BookingForm() {
               </div>
             ) : (
               <form onSubmit={onSubmit} className="space-y-4">
+                {error && <p className="text-sm text-red-600">{error}</p>}
                 <Field label="Full Name">
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -66,7 +85,9 @@ export default function BookingForm() {
                     <input name="address" value={form.address} onChange={onChange} required placeholder="Your locality in Hyderabad" className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-500" />
                   </Field>
                 </div>
-                <button type="submit" className="w-full rounded-lg bg-rose-600 px-4 py-3 text-white font-semibold hover:bg-rose-700">Confirm Booking</button>
+                <button type="submit" disabled={loading} className="w-full rounded-lg bg-rose-600 px-4 py-3 text-white font-semibold hover:bg-rose-700 disabled:opacity-60">
+                  {loading ? 'Submitting...' : 'Confirm Booking'}
+                </button>
                 <p className="text-xs text-gray-500">By booking, you agree to be contacted on phone/WhatsApp for confirmation.</p>
               </form>
             )}

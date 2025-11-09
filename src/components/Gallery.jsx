@@ -1,63 +1,40 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Search, Filter } from 'lucide-react';
 
-const SAMPLE_WALLPAPERS = [
-  {
-    id: 1,
-    title: 'Scandinavian Minimal',
-    style: 'Modern',
-    color: 'Neutral',
-    room: 'Living Room',
-    price: 120,
-    img: 'https://images.unsplash.com/photo-1505691723518-36a5ac3b2d42?q=80&w=1740&auto=format&fit=crop',
-  },
-  {
-    id: 2,
-    title: 'Botanical Luxe',
-    style: 'Nature',
-    color: 'Green',
-    room: 'Bedroom',
-    price: 180,
-    img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1740&auto=format&fit=crop',
-  },
-  {
-    id: 3,
-    title: 'Art Deco Gold',
-    style: 'Classic',
-    color: 'Gold',
-    room: 'Dining',
-    price: 220,
-    img: 'https://images.unsplash.com/photo-1484101403633-562f891dc89a?q=80&w=1740&auto=format&fit=crop',
-  },
-  {
-    id: 4,
-    title: 'Textured Concrete',
-    style: 'Industrial',
-    color: 'Gray',
-    room: 'Office',
-    price: 150,
-    img: 'https://images.unsplash.com/photo-1500043357865-c6b8827edf11?q=80&w=1740&auto=format&fit=crop',
-  },
-];
+const BACKEND = import.meta.env.VITE_BACKEND_URL || '';
 
 export default function Gallery() {
   const [q, setQ] = useState('');
   const [filters, setFilters] = useState({ style: 'All', color: 'All', room: 'All', price: 'All' });
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch(`${BACKEND}/api/wallpapers`);
+        const data = await res.json();
+        setItems(Array.isArray(data) ? data : []);
+      } catch (e) {
+        setItems([]);
+      }
+    }
+    load();
+  }, []);
 
   const filtered = useMemo(() => {
-    return SAMPLE_WALLPAPERS.filter((w) => {
-      const matchesQ = q ? w.title.toLowerCase().includes(q.toLowerCase()) : true;
+    return items.filter((w) => {
+      const matchesQ = q ? w.title?.toLowerCase().includes(q.toLowerCase()) : true;
       const matchesStyle = filters.style === 'All' || w.style === filters.style;
       const matchesColor = filters.color === 'All' || w.color === filters.color;
       const matchesRoom = filters.room === 'All' || w.room === filters.room;
       const matchesPrice =
         filters.price === 'All' ||
-        (filters.price === 'Under 150' && w.price < 150) ||
-        (filters.price === '150 - 200' && w.price >= 150 && w.price <= 200) ||
-        (filters.price === '200+' && w.price > 200);
+        (filters.price === 'Under 150' && Number(w.price) < 150) ||
+        (filters.price === '150 - 200' && Number(w.price) >= 150 && Number(w.price) <= 200) ||
+        (filters.price === '200+' && Number(w.price) > 200);
       return matchesQ && matchesStyle && matchesColor && matchesRoom && matchesPrice;
     });
-  }, [q, filters]);
+  }, [q, filters, items]);
 
   const update = (key, value) => setFilters((f) => ({ ...f, [key]: value }));
 
@@ -90,8 +67,8 @@ export default function Gallery() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filtered.map((w) => (
-            <article key={w.id} className="group rounded-xl overflow-hidden bg-white shadow ring-1 ring-gray-200">
+          {filtered.map((w, idx) => (
+            <article key={`${w.title}-${idx}`} className="group rounded-xl overflow-hidden bg-white shadow ring-1 ring-gray-200">
               <div className="relative aspect-[4/5] overflow-hidden">
                 <img src={w.img} alt={w.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -100,7 +77,7 @@ export default function Gallery() {
                 <h3 className="font-semibold text-gray-900">{w.title}</h3>
                 <p className="text-sm text-gray-600">{w.style} • {w.color} • {w.room}</p>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-rose-600 font-bold">₹{w.price}/sq.ft</span>
+                  <span className="text-rose-600 font-bold">₹{Number(w.price).toFixed(0)}/sq.ft</span>
                   <button className="inline-flex items-center gap-1 text-sm font-medium text-rose-600 hover:text-rose-700">
                     <Filter className="h-4 w-4" /> Details
                   </button>
@@ -108,6 +85,9 @@ export default function Gallery() {
               </div>
             </article>
           ))}
+          {filtered.length === 0 && (
+            <div className="col-span-full text-center text-gray-600">No wallpapers found.</div>
+          )}
         </div>
       </div>
     </section>
