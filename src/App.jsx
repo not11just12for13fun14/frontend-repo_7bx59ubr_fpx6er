@@ -1,28 +1,33 @@
-import { useState } from 'react'
+import Navbar from './components/Navbar';
+import HeroSection from './components/HeroSection';
+import Gallery from './components/Gallery';
+import QuoteCalculator from './components/QuoteCalculator';
+import BookingForm from './components/BookingForm';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Vibe Coding Platform
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Your AI-powered development environment
-        </p>
-        <div className="text-center">
-          <button
-            onClick={() => setCount(count + 1)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          >
-            Count is {count}
-          </button>
-        </div>
-      </div>
+    <div className="font-inter text-gray-900">
+      <Navbar />
+      <main>
+        <HeroSection />
+        <Gallery />
+        <QuoteCalculator />
+        <BookingForm />
+        <Footer />
+      </main>
     </div>
-  )
+  );
 }
 
-export default App
+function Footer() {
+  return (
+    <footer className="border-t border-gray-100 bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="text-sm text-gray-600">© {new Date().getFullYear()} Book My Wallpaper • Hyderabad</p>
+        <div className="text-sm text-gray-600">WhatsApp: +91 99999 99999 • Email: hello@bookmywallpaper.in</div>
+      </div>
+    </footer>
+  );
+}
+
+export default App;
